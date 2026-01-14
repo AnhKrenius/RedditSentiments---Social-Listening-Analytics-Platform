@@ -24,7 +24,9 @@ A full-stack web application that combines:
 - **Database**: Firebase Firestore
 - **AI/ML**: Groq API, VADER, BERT, Scikit-learn
 - **Deployment**: Docker, Render (Cloud hosting)
-- **Scraping**: Apify, Reddit PRAW, Youtube API
+- **Data Scraping**: Public social platform data access via official APIs and compliant data collection services
+- **Payments & Billing**: Stripe (subscription and usage-based billing)
+
 
 ## ✨ Key Features
 
