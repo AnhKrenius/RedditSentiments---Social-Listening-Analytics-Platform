@@ -2,266 +2,134 @@
 
 ## Overview
 
-This document provides a detailed overview of the system architecture for the Social Media Listening Platform.
+This document provides a **high-level architectural overview** of the Social Listening Analytics Platform. It is intended for **portfolio and case study purposes only**. Implementation details, source code, and internal configurations are intentionally omitted to protect intellectual property.
+
+---
 
 ## High-Level Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        Client Layer                           │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │              React Frontend Application                │   │
-│  │  - Dashboard UI                                        │   │
-│  │  - Data Visualization                                  │   │
-│  │  - User Authentication (Firebase)                      │   │
-│  └──────────────────────────────────────────────────────┘   │
-└───────────────────────────┬───────────────────────────────────┘
-                            │ HTTPS/REST API
-┌───────────────────────────▼───────────────────────────────────┐
-│                      API Gateway Layer                         │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │              Flask Backend Server                     │   │
-│  │  - RESTful API Endpoints                              │   │
-│  │  - Request Validation                                 │   │
-│  │  - Authentication Middleware                          │   │
-│  │  - Error Handling                                     │   │
-│  └──────────────────────────────────────────────────────┘   │
-└───────────────────────────┬───────────────────────────────────┘
-                            │
-        ┌───────────────────┼───────────────────┐
-        │                   │                     │
-┌───────▼────────┐  ┌───────▼────────┐  ┌────────▼────────┐
-│  Service Layer │  │  Service Layer │  │  Service Layer  │
-│                │  │                │  │                  │
-│ RedditService  │  │ CommentAnalysis│  │ InfluencerTrust  │
-│ - Data Fetch   │  │ Service        │  │ Service         │
-│ - Preprocessing│  │ - AI Analysis   │  │ - Trust Signals │
-│ - Deduplication│  │ - Keyword Extract│ │ - Score Calc    │
-└───────┬────────┘  └───────┬────────┘  └────────┬────────┘
-        │                   │                     │
-        └───────────────────┼─────────────────────┘
-                            │
-        ┌───────────────────┼───────────────────┐
-        │                   │                   │
-┌───────▼────────┐  ┌───────▼────────┐  ┌──────▼────────┐
-│  External APIs │  │  External APIs │  │  External APIs │
-│                │  │                │  │                │
-│   Reddit API   │  │    Groq API    │  │  Firebase      │
-│                │  │  (Qwen3-32B)   │  │  - Auth        │
-│                │  │                │  │  - Firestore   │
-└────────────────┘  └────────────────┘  └────────────────┘
-```
+The platform follows a **standard three-layer architecture**:
 
-## Component Details
+* **Client Layer**: Web-based user interface for interaction and visualization
+* **Application Layer**: API and orchestration layer handling business logic
+* **Service & Integration Layer**: Data ingestion, analytics, and third-party integrations
 
-### Frontend (React)
+This design emphasizes **modularity, scalability, and separation of concerns**.
 
-**Responsibilities:**
-- User interface and user experience
-- Data visualization (charts, word clouds, tables)
-- User authentication UI
-- API communication with backend
+---
 
-**Key Technologies:**
-- React.js
-- React Router for navigation
-- Axios for API calls
-- Chart.js / Recharts for visualizations
-- Firebase SDK for authentication
+## Core Components
 
-### Backend (Flask)
+### Client Layer
 
-**Responsibilities:**
-- RESTful API endpoints
-- Business logic orchestration
-- Data processing coordination
-- Authentication and authorization
-- Error handling and logging
+**Purpose**:
 
-**Key Technologies:**
-- Flask (Python web framework)
-- Flask-CORS for cross-origin requests
-- Firebase Admin SDK for server-side auth
-- Python logging for error tracking
+* User interaction and data exploration
+* Visualization of trends and analytics results
+* Secure user authentication
 
-### Service Layer
+**Characteristics**:
 
-#### RedditService
-- **Purpose**: Reddit data collection and preprocessing
-- **Key Functions**:
-  - Keyword-based post searching
-  - Comment extraction
-  - Data cleaning and deduplication
-  - Sentiment preprocessing
+* Single-page web application
+* Communicates with backend services via secure APIs
 
-#### CommentAnalysisService
-- **Purpose**: Deep AI-powered comment analysis
-- **Key Functions**:
-  - Keyword extraction
-  - Sentiment analysis
-  - Persona identification
-  - Motivation analysis
-  - Risk/opportunity detection
+---
 
-#### InfluencerTrustService
-- **Purpose**: Trust signal analysis
-- **Key Functions**:
-  - High trust signal detection (H1-H4)
-  - Low trust signal detection (L1-L4)
-  - Trust score calculation
-  - Multi-platform analysis
+### Application Layer
 
-#### CustomerValueService
-- **Purpose**: Customer value extraction
-- **Key Functions**:
-  - Value dimension analysis (4 dimensions)
-  - Cost dimension analysis (4 dimensions)
-  - Delivered Value Score calculation
-  - Recommendation generation
+**Purpose**:
 
-## Data Flow
+* Acts as the central coordination layer
+* Exposes authenticated APIs to the client
+* Orchestrates analytics workflows
 
-### Keyword-based Analysis Flow
+**Responsibilities**:
 
-```
-User Input (Keyword)
-    ↓
-RedditService.search_subreddit()
-    ↓
-Reddit API (Fetch Posts)
-    ↓
-DataProcessor.clean_text()
-    ↓
-Sentiment Analysis (VADER + ML + BERT)
-    ↓
-Aggregation & Metadata
-    ↓
-Response to Frontend
-```
+* Request validation and authorization
+* Routing and aggregation of service responses
+* Error handling and observability
 
-### URL-based Analysis Flow
+---
 
-```
-User Input (URL)
-    ↓
-Platform Detection
-    ↓
-Comment Extraction (Reddit/YouTube/Twitter)
-    ↓
-CommentAnalysisService / InfluencerTrustService / CustomerValueService
-    ↓
-Groq API (Qwen3-32B) - Deep Analysis
-    ↓
-Result Processing & Normalization
-    ↓
-Response to Frontend
-```
+### Analytics & Service Layer
 
-## Database Schema
+This layer encapsulates domain-specific logic and analytics capabilities.
 
-### Firebase Firestore Collections
+**Key Capabilities**:
 
-**users**
-```
-{
-  uid: string,
-  email: string,
-  plan_key: string,
-  created_at: timestamp,
-  usage: {
-    searches_this_month: number,
-    comments_exported: number
-  }
-}
-```
+* Social data ingestion from public platforms
+* Text preprocessing and normalization
+* NLP-driven sentiment and thematic analysis
+* Trust and credibility signal evaluation
+* Insight aggregation for downstream consumption
 
-**analyses** (Optional - for caching)
-```
-{
-  id: string,
-  user_id: string,
-  analysis_type: string,
-  input_data: object,
-  results: object,
-  created_at: timestamp
-}
-```
+All services are designed to be **stateless and independently scalable**.
 
-## API Endpoints
+---
 
-### Authentication
-- `POST /api/auth/login` - User authentication
-- `POST /api/auth/verify` - Token verification
+## Data Flow (Conceptual)
 
-### Data Collection
-- `POST /api/search-reddit` - Keyword-based Reddit search
-- `POST /api/export-comments` - URL-based comment export
+1. User submits a keyword or content reference via the client
+2. Request is authenticated and validated by the application layer
+3. Relevant public social data is collected and processed
+4. Analytical models generate aggregated insights
+5. Results are returned to the client for visualization
 
-### Analysis
-- `POST /api/analyze-comments` - General comment analysis
-- `POST /api/check-influencer-trust` - Influencer trust analysis
-- `POST /api/analyze-customer-value` - Customer value analysis
-- `POST /api/sentiment_counts` - Sentiment distribution
+This flow supports both **exploratory analysis** and **monitoring use cases**.
 
-### User Management
-- `GET /api/user/usage` - Get user usage statistics
-- `GET /api/user/quota` - Check quota limits
+---
+
+## Data Management (High-Level)
+
+The platform stores only **essential metadata** required for operation:
+
+* User identity and access information
+* Usage and quota tracking
+* Cached analytical results for performance optimization
+
+No raw third-party content is permanently stored beyond necessary processing windows.
+
+---
 
 ## Security Considerations
 
-1. **Authentication**: Firebase Authentication with JWT tokens
-2. **API Security**: Token-based authentication middleware
-3. **Rate Limiting**: Per-user quota management
-4. **Input Validation**: Comprehensive input sanitization
-5. **Error Handling**: Secure error messages (no sensitive data exposure)
+* Token-based authentication and authorization
+* Strict access control at API boundaries
+* Input validation and sanitization
+* Controlled exposure of error information
 
-## Scalability
+Security design prioritizes **user privacy** and **platform compliance**.
 
-### Current Implementation
-- Single Flask server instance
-- Stateless API design
-- External API dependencies (Reddit, Groq, Firebase)
+---
 
-### Future Scalability Options
-- Horizontal scaling with load balancer
-- Redis caching for frequent queries
-- Message queue for async processing
-- Database optimization for large datasets
+## Scalability & Reliability
 
-## Deployment
+**Design Principles**:
 
-### Current Setup
-- Frontend: Render (Static site hosting)
-- Backend: Render (Docker container)
-- Database: Firebase Firestore (Cloud)
+* Stateless application services
+* Horizontal scalability
+* Externalized dependencies
 
-### Docker Configuration
-```dockerfile
-# Backend Dockerfile
-FROM python:3.9
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-COPY . .
-CMD ["python", "server.py"]
-```
+**Future Enhancements**:
 
-## Monitoring & Logging
+* Caching for high-frequency queries
+* Asynchronous processing for heavy workloads
+* Improved monitoring and alerting
 
-- **Application Logs**: Python logging module
-- **Error Tracking**: Structured error logging
-- **Performance Monitoring**: Request/response time tracking
-- **API Usage**: User quota and usage tracking
+---
 
-## Technology Stack Summary
+## Deployment (Conceptual)
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React.js, React Router, Axios |
-| Backend | Flask, Python 3.9+ |
-| Authentication | Firebase Authentication |
-| Database | Firebase Firestore |
-| AI/ML | Groq API (Qwen3-32B), VADER, BERT, Scikit-learn |
-| APIs | Reddit API, YouTube API, Twitter API |
-| Deployment | Docker, Render |
-| Version Control | Git |
+The platform is deployed using a **containerized, cloud-based setup**:
+
+* Web client served via managed hosting
+* Backend services deployed as containerized applications
+* Managed cloud services for authentication and persistence
+
+Specific infrastructure configurations are intentionally excluded.
+
+---
+
+## Disclaimer
+
+This architecture description is a **conceptual representation** of a real-world system. It omits implementation-level details to comply with intellectual property and confidentiality requirements.
