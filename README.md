@@ -93,10 +93,10 @@ portfolio/
 ├── ARCHITECTURE.md          # Detailed system architecture
 ├── METRICS.md               # Performance metrics and results
 ├── screenshots/             # UI screenshots and demos
-│   ├── dashboard.png
-│   ├── sentiment-analysis.png
-│   ├── market-analysis.png
-│   └── influencer-trust.png
+│   ├── pricing.png
+│   ├── customer_delivered_value.png
+│   ├── market_analysis.png
+│   └── influencer_trust.png
 └── diagrams/
     └── system_architecture.png
 ```
